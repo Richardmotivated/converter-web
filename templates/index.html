@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Richard Unit Converter</title>
+
+<style>
+body {
+    margin: 0;
+    overflow: hidden;
+    font-family: Consolas, monospace;
+    background: black;
+}
+
+/* BACKGROUND */
+canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 0;
+}
+
+/* MAIN CARD */
+.card {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 35px;
+    border-radius: 20px;
+    width: 360px;
+    text-align: center;
+    z-index: 2;
+    background: #11111b;
+    box-shadow: 0 0 40px rgba(0,255,255,0.2);
+}
+
+h1 {
+    color: #00ffee;
+}
+
+/* INPUTS */
+input, select {
+    width: 100%;
+    padding: 10px;
+    margin: 6px 0;
+    border: none;
+    border-radius: 8px;
+    background: #1a1a2a;
+    color: white;
+    text-align: center;
+}
+
+/* BUTTONS */
+button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 8px;
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.convert { background: #00ffee; }
+.swap { background: #ff00aa; color: white; }
+.theme { background: #444; color: white; }
+
+/* RESULT SCREEN */
+#resultScreen {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: black;
+    color: white;
+    text-align: center;
+    padding-top: 200px;
+    font-size: 30px;
+    z-index: 3;
+}
+
+#resultScreen button {
+    width: auto;
+    padding: 10px 20px;
+    font-size: 18px;
+}
+
+.result {
+    margin-top: 15px;
+    font-size: 20px;
+    color: #00ffee;
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="bg"></canvas>
+
+<div class="card">
+    <h1>⚡ UNIT CONVERTER ⚡</h1>
+
+    <input id="value" type="number" placeholder="Enter value">
+
+    <select id="from"></select>
+    <select id="to"></select>
+
+    <button class="swap" onclick="swap()">⇅ SWAP</button>
+
+    <button onclick="setMode('Length')" class="theme">Length</button>
+    <button onclick="setMode('Area')" class="theme">Area</button>
+
+    <button class="convert" onclick="convert()">CONVERT</button>
+</div>
+
+<!-- RESULT SCREEN -->
+<div id="resultScreen">
+    <div id="resultText"></div>
+    <br><br>
+    <button onclick="back()">BACK</button>
+</div>
+
+<script>
+
+// ---------------------
+// MODE SYSTEM
+// ---------------------
+let mode = "Length";
+
+let units = {
+    Length: ["meter","kilometer","mile","foot","inch"],
+    Area: ["square meter","square kilometer","square mile","square foot","acre","hectare"]
+};
+
+function setMode(m){
+    mode = m;
+    fill();
+}
+
+// ---------------------
+// FILL DROPDOWNS
+// ---------------------
+function fill(){
+    let from = document.getElementById("from");
+    let to = document.getElementById("to");
+
+    from.innerHTML = "";
+    to.innerHTML = "";
+
+    units[mode].forEach(u=>{
+        from.innerHTML += `<option>${u}</option>`;
+        to.innerHTML += `<option>${u}</option>`;
+    });
+
+    from.value = units[mode][0];
+    to.value = units[mode][1];
+}
+
+fill();
+
+// ---------------------
+// CONVERT FUNCTION
+// ---------------------
+function convert(){
+    let v = parseFloat(document.getElementById("value").value);
+
+    if(isNaN(v)){
+        showResult("INVALID INPUT");
+        return;
+    }
+
+    let length = {
+        meter:1,
+        kilometer:1000,
+        mile:1609.34,
+        foot:0.3048,
+        inch:0.0254
+    };
+
+    let area = {
+        "square meter":1,
+        "square kilometer":1e6,
+        "square mile":2.59e6,
+        "square foot":0.092903,
+        acre:4046.86,
+        hectare:10000
+    };
+
+    let table = (mode === "Length") ? length : area;
+
+    let f = document.getElementById("from").value;
+    let t = document.getElementById("to").value;
+
+    let result = v * table[f] / table[t];
+
+    showResult(result.toFixed(4) + " " + t);
+}
+
+// ---------------------
+// RESULT SCREEN
+// ---------------------
+function showResult(text){
+    document.querySelector(".card").style.display = "none";
+    document.getElementById("resultScreen").style.display = "block";
+    document.getElementById("resultText").innerText = text;
+}
+
+function back(){
+    document.querySelector(".card").style.display = "block";
+    document.getElementById("resultScreen").style.display = "none";
+}
+
+// ---------------------
+// SWAP
+// ---------------------
+function swap(){
+    let f = document.getElementById("from");
+    let t = document.getElementById("to");
+    [f.value, t.value] = [t.value, f.value];
+}
+
+// ---------------------
+// BACKGROUND (SAFE)
+// ---------------------
+const canvas = document.getElementById("bg");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let stars = [];
+for(let i=0;i<100;i++){
+    stars.push({
+        x:Math.random()*canvas.width,
+        y:Math.random()*canvas.height
+    });
+}
+
+function draw(){
+    ctx.fillStyle = "black";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    ctx.fillStyle = "white";
+    stars.forEach(s=>{
+        ctx.fillRect(s.x,s.y,2,2);
+    });
+
+    requestAnimationFrame(draw);
+}
+draw();
+
+</script>
+
+</body>
+</html>
